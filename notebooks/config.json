@@ -16,5 +16,30 @@
             "Z790",
             "B760"
         ]
-    }
+    },
+    "Motherboards": {
+        "Z790": [],
+        "B760": []
+    },
+    "RAM": [
+        "32G DDR5"
+    ],
+    "SSD": [
+        "1T"
+    ],
+    "Cooling": [
+        "Liquid Cooling",
+        "Air Cooling"
+    ],
+    "Fans": [
+        "120mm Fans",
+        "80mm Fans"
+    ],
+    "PSU": [
+        "850W PSU",
+        "1000W PSU"
+    ],
+    "Case": [
+        "Case"
+    ]
 }
