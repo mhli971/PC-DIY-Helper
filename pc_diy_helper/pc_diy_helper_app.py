@@ -2,6 +2,10 @@
 import tkinter as tk
 from tkinter import ttk
 import json
+import sys
+import getpass
+
+sys.path.append(f"/Users/{getpass.getuser()}/git/mhli971/PC-DIY-Helper/")
 
 
 class PCDIYHelperApp(tk.Tk):
@@ -45,7 +49,7 @@ class PCDIYHelperApp(tk.Tk):
         self.geometry("1450x500")
 
         # Load configuration
-        with open("config.json") as f:
+        with open("pc_diy_helper/config.json") as f:
             config = json.load(f)
         self.cpus = config["CPUs"]
         self.gpus = config["GPUs"]
@@ -58,7 +62,7 @@ class PCDIYHelperApp(tk.Tk):
         self.cases = config["Case"]
 
         # Price manager
-        self.price_manager = PCDIYHelperApp.PriceManager("prices.json")
+        self.price_manager = PCDIYHelperApp.PriceManager("pc_diy_helper/prices.json")
 
         # Dropdowns
         self.gpu_dropdown = PCDIYHelperApp.Dropdown(
