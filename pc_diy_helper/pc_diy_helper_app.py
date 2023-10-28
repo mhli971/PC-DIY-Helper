@@ -9,6 +9,21 @@ sys.path.append(f"/Users/{getpass.getuser()}/git/mhli971/PC-DIY-Helper/")
 
 
 class PCDIYHelperApp(tk.Tk):
+    class Dropdown:
+        # Do not change anything here, all default
+        def __init__(self, master, label_text, options, update_func, row, column):
+            self.label = ttk.Label(master, text=label_text)
+            self.label.grid(row=row, column=column, pady=5, padx=5)
+            self.var = tk.StringVar(master)
+            if options != []:
+                self.var.set(options[0])  # set the default option
+            else:
+                self.var.set("")
+            self.menu = ttk.Combobox(master, textvariable=self.var, values=options)
+            self.menu.grid(row=row, column=column + 1, pady=5, padx=5)
+            self.menu.bind("<<ComboboxSelected>>", update_func)
+
+    # TODO: merge this with EditionManager
     class PriceManager:
         def __init__(self, filename):
             with open(filename) as f:
@@ -17,39 +32,70 @@ class PCDIYHelperApp(tk.Tk):
         def get_price(self, category, name):
             return self.prices.get(category, {}).get(name, 0)
 
-    class Dropdown:
-        def __init__(self, master, label_text, options, update_func, row, column):
-            self.label = ttk.Label(master, text=label_text)
-            self.label.grid(row=row, column=column, pady=5, padx=5)
-            self.var = tk.StringVar(master)
-            self.var.set(options[0])  # set the default option
-            self.menu = ttk.Combobox(master, textvariable=self.var, values=options)
-            self.menu.grid(row=row, column=column + 1, pady=5, padx=5)
-            self.menu.bind("<<ComboboxSelected>>", update_func)
+    class VersionManager:
+        def __init__(self, version_config):
+            with open(version_config) as f:
+                self.version_dict = json.load(f)
 
-    class Updater:
-        def __init__(self, data, from_dropdown, to_dropdown, next_updater=None):
-            self.data = data
-            self.from_dropdown = from_dropdown
-            self.to_dropdown = to_dropdown
-            self.next_updater = next_updater
+        def get_versions(self, model: str) -> dict:
+            # model could be RTX 4090, could be PSU
+            # returns a dict of versions with reference prices
+            return self.version_dict.get(model, {})
 
-        def update(self, event):
-            key = self.from_dropdown.var.get()
-            values = self.data.get(key, [])
-            if values:  # check if values is not an empty list
-                self.to_dropdown.var.set(values[0])  # set the default option
-                self.to_dropdown.menu["values"] = values
-                if self.next_updater is not None:
-                    self.next_updater.update(None)
+    class ModelUpdater:
+        def __init__(
+            self, dependent_dict, prev_dropdown, cur_dropdown, next_model_updater=None
+        ):
+            self.dependent_dict = dependent_dict
+            self.prev_dropdown = prev_dropdown
+            self.cur_dropdown = cur_dropdown
+            self.next_model_updater = next_model_updater
+
+        def update_model_dropdown(self, event):
+            prev_model = self.prev_dropdown.var.get()
+            dependent_ls = self.dependent_dict.get(prev_model, [])
+            print(prev_model)
+            print(dependent_ls)
+            self.cur_dropdown.var.set(dependent_ls[0])  # set the default option
+            self.cur_dropdown.menu["values"] = dependent_ls
+            # chain the updates
+            if self.next_model_updater is not None:
+                self.next_model_updater.update_model_dropdown(event=None)
+
+        def bind_update(self):
+            self.prev_dropdown.menu.bind(
+                "<<ComboboxSelected>>", lambda event: self.update_model_dropdown(event)
+            )
+
+    class VersionUpdater:
+        def __init__(self, model_dropdown, version_dropdown, version_manager):
+            self.model_dropdown = model_dropdown
+            self.version_dropdown = version_dropdown
+            self.version_manager = version_manager
+
+        def update_version_dropdown(self, event):
+            model = self.model_dropdown.var.get()
+            version_ls = list(self.version_manager.get_versions(model).keys())
+            self.version_dropdown.var.set(version_ls[0])  # set the default option
+            self.version_dropdown.menu["values"] = version_ls
+            self.version_dropdown.label[
+                "text"
+            ] = f"Select a specific version for {model}:"
+
+        def bind_update(self):
+            # event must be passed in
+            self.model_dropdown.menu.bind(
+                "<<ComboboxSelected>>",
+                lambda event: self.update_version_dropdown(event),
+            )
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("PC DIY Helper")
-        self.geometry("1450x500")
+        self.geometry("2000x600")
 
         # Load configuration
-        with open("pc_diy_helper/config.json") as f:
+        with open("pc_diy_helper/dependents.json") as f:
             config = json.load(f)
         self.cpus = config["CPUs"]
         self.gpus = config["GPUs"]
@@ -61,12 +107,23 @@ class PCDIYHelperApp(tk.Tk):
         self.psus = config["PSU"]
         self.cases = config["Case"]
 
-        # Price manager
+        # Managers
         self.price_manager = PCDIYHelperApp.PriceManager("pc_diy_helper/prices.json")
+        self.version_manager = PCDIYHelperApp.VersionManager(
+            "pc_diy_helper/versions.json"
+        )
 
         # Dropdowns
         self.gpu_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select GPU:", list(self.gpus.keys()), None, 0, 0
+        )
+        self.gpu_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            f"Select a specific model for GPU:",
+            [],
+            None,
+            0,
+            4,
         )
         self.cpu_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select CPU:", self.gpus[self.gpu_dropdown.var.get()], None, 1, 0
@@ -99,18 +156,19 @@ class PCDIYHelperApp(tk.Tk):
         )
 
         # Updaters
-        self.motherboard_updater = PCDIYHelperApp.Updater(
+        self.motherboard_updater = PCDIYHelperApp.ModelUpdater(
             self.cpus, self.cpu_dropdown, self.motherboard_dropdown
         )
-        self.cpu_updater = PCDIYHelperApp.Updater(
+        self.cpu_updater = PCDIYHelperApp.ModelUpdater(
             self.gpus, self.gpu_dropdown, self.cpu_dropdown, self.motherboard_updater
         )
-
-        # Set update functions for dropdowns
-        self.gpu_dropdown.menu.bind("<<ComboboxSelected>>", self.cpu_updater.update)
-        self.cpu_dropdown.menu.bind(
-            "<<ComboboxSelected>>", self.motherboard_updater.update
+        self.gpu_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.gpu_dropdown, self.gpu_version_dropdown, self.version_manager
         )
+
+        self.cpu_updater.bind_update()
+        self.motherboard_updater.bind_update()
+        # self.gpu_version_updater.bind_update()
 
         # Button to display selected components
         build_button = ttk.Button(
@@ -119,11 +177,12 @@ class PCDIYHelperApp(tk.Tk):
             command=self.display_selected_components,
             style="TButton",
         )
-        build_button.grid(row=0, column=4, pady=10, padx=30)
+        build_col = 6
+        build_button.grid(row=0, column=build_col, pady=10, padx=30)
 
         # Text box to display selected components
         self.result_text = tk.Text(self, height=30, width=100)  # Adjusted size
-        self.result_text.grid(row=1, rowspan=5, column=4, pady=10, padx=30)
+        self.result_text.grid(row=1, rowspan=5, column=build_col, pady=10, padx=30)
 
     def display_selected_components(self):
         gpu = self.gpu_dropdown.var.get()

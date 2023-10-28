@@ -1,0 +1,12 @@
+{
+    "RTX 4090": {
+        "Model A": 1500,
+        "Model B": 1600,
+        "Model C": 1700
+    },
+    "RTX 4080": {
+        "Model X": 1200,
+        "Model Y": 1300,
+        "Model Z": 1400
+    }
+}
