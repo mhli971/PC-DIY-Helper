@@ -1,0 +1,35 @@
+{
+    "GPU": {
+        "RTX 4090": 1500,
+        "RTX 4080": 1000
+    },
+    "CPU": {
+        "i7-13700KF": 400,
+        "i5-13600KF": 300
+    },
+    "Motherboard": {
+        "Z790": 200,
+        "B760": 150
+    },
+    "RAM": {
+        "32G DDR5": 150
+    },
+    "SSD": {
+        "1T": 100
+    },
+    "Cooling": {
+        "Liquid Cooling": 100,
+        "Air Cooling": 50
+    },
+    "Fans": {
+        "120mm Fans": 20,
+        "80mm Fans": 15
+    },
+    "PSU": {
+        "850W PSU": 100,
+        "1000W PSU": 150
+    },
+    "Case": {
+        "Case": 50
+    }
+}

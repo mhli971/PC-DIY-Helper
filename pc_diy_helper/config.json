@@ -1,0 +1,45 @@
+{
+    "GPUs": {
+        "RTX 4090": [
+            "i7-13700KF"
+        ],
+        "RTX 4080": [
+            "i7-13700KF",
+            "i5-13600KF"
+        ]
+    },
+    "CPUs": {
+        "i7-13700KF": [
+            "Z790"
+        ],
+        "i5-13600KF": [
+            "Z790",
+            "B760"
+        ]
+    },
+    "Motherboards": {
+        "Z790": [],
+        "B760": []
+    },
+    "RAM": [
+        "32G DDR5"
+    ],
+    "SSD": [
+        "1T"
+    ],
+    "Cooling": [
+        "Liquid Cooling",
+        "Air Cooling"
+    ],
+    "Fans": [
+        "120mm Fans",
+        "80mm Fans"
+    ],
+    "PSU": [
+        "850W PSU",
+        "1000W PSU"
+    ],
+    "Case": [
+        "Case"
+    ]
+}
