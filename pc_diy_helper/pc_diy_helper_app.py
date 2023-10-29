@@ -1,4 +1,3 @@
-# main.py
 import tkinter as tk
 from tkinter import ttk
 import json
@@ -23,15 +22,6 @@ class PCDIYHelperApp(tk.Tk):
             self.menu.grid(row=row, column=column + 1, pady=5, padx=5)
             self.menu.bind("<<ComboboxSelected>>", update_func)
 
-    # TODO: merge this with EditionManager
-    class PriceManager:
-        def __init__(self, filename):
-            with open(filename) as f:
-                self.prices = json.load(f)
-
-        def get_price(self, category, name):
-            return self.prices.get(category, {}).get(name, 0)
-
     class VersionManager:
         def __init__(self, version_config):
             with open(version_config) as f:
@@ -41,6 +31,9 @@ class PCDIYHelperApp(tk.Tk):
             # model could be RTX 4090, could be PSU
             # returns a dict of versions with reference prices
             return self.version_dict.get(model, {})
+
+        def get_version_price(self, model, version):
+            return self.get_versions(model).get(version, 0)
 
     class ModelUpdater:
         def __init__(
@@ -54,8 +47,6 @@ class PCDIYHelperApp(tk.Tk):
         def update_model_dropdown(self, event):
             prev_model = self.prev_dropdown.var.get()
             dependent_ls = self.dependent_dict.get(prev_model, [])
-            # print(prev_model)
-            # print(dependent_ls)
             self.cur_dropdown.var.set(dependent_ls[0])  # set the default option
             self.cur_dropdown.menu["values"] = dependent_ls
             # chain the updates
@@ -95,21 +86,19 @@ class PCDIYHelperApp(tk.Tk):
             self.version_updater = version_updater
 
         def bind_update(self):
-            assert (
-                self.model_updater.prev_dropdown == self.version_updater.model_dropdown
-            )
-            self.model_updater.prev_dropdown.menu.bind(
+            self.version_updater.model_dropdown.menu.bind(
                 "<<ComboboxSelected>>", self.wrapper_function
             )
 
         def wrapper_function(self, event):
-            self.model_updater.update_model_dropdown(event)
+            if self.model_updater is not None:
+                self.model_updater.update_model_dropdown(event)
             self.version_updater.update_version_dropdown(event)
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("PC DIY Helper")
-        self.geometry("2000x600")
+        self.geometry("2500x600")
 
         # Load configuration
         with open("pc_diy_helper/dependents.json") as f:
@@ -125,7 +114,7 @@ class PCDIYHelperApp(tk.Tk):
         self.cases = config["Case"]
 
         # Managers
-        self.price_manager = PCDIYHelperApp.PriceManager("pc_diy_helper/prices.json")
+        # self.price_manager = PCDIYHelperApp.PriceManager("pc_diy_helper/versions.json")
         self.version_manager = PCDIYHelperApp.VersionManager(
             "pc_diy_helper/versions.json"
         )
@@ -145,6 +134,14 @@ class PCDIYHelperApp(tk.Tk):
         self.cpu_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select CPU:", self.gpus[self.gpu_dropdown.var.get()], None, 1, 0
         )
+        self.cpu_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            f"Select a specific model for CPU:",
+            [],
+            None,
+            1,
+            4,
+        )
         self.motherboard_dropdown = PCDIYHelperApp.Dropdown(
             self,
             "Select Motherboard:",
@@ -153,23 +150,82 @@ class PCDIYHelperApp(tk.Tk):
             2,
             0,
         )
+        self.motherboard_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            f"Select a specific model for Motherboard:",
+            [],
+            None,
+            2,
+            4,
+        )
         self.ram_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select RAM:", self.rams, self.do_nothing, 0, 2
+        )
+        self.ram_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            f"Select a specific model for RAM:",
+            [],
+            None,
+            3,
+            4,
         )
         self.ssd_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select SSD:", self.ssds, self.do_nothing, 1, 2
         )
+        self.ssd_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            f"Select a specific model for SSD:",
+            [],
+            None,
+            4,
+            4,
+        )
         self.cooling_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select Cooling:", self.coolings, self.do_nothing, 2, 2
         )
+        self.cooling_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            "Select a specific model for Cooling:",
+            [],
+            None,
+            5,
+            4,
+        )
+
         self.fans_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select Fans:", self.fans, self.do_nothing, 3, 2
         )
+        self.fans_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            "Select a specific model for Fans:",
+            [],
+            None,
+            0,
+            6,
+        )
+
         self.psu_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select PSU:", self.psus, self.do_nothing, 4, 2
         )
+        self.psu_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            "Select a specific model for PSU:",
+            [],
+            None,
+            1,
+            6,
+        )
+
         self.case_dropdown = PCDIYHelperApp.Dropdown(
             self, "Select Case:", self.cases, self.do_nothing, 5, 2
+        )
+        self.case_version_dropdown = PCDIYHelperApp.Dropdown(
+            self,
+            "Select a specific model for Case:",
+            [],
+            None,
+            2,
+            6,
         )
 
         # Updaters
@@ -179,32 +235,92 @@ class PCDIYHelperApp(tk.Tk):
         self.cpu_updater = PCDIYHelperApp.ModelUpdater(
             self.gpus, self.gpu_dropdown, self.cpu_dropdown, self.motherboard_updater
         )
+
+        # VersionUpdaters
         self.gpu_version_updater = PCDIYHelperApp.VersionUpdater(
             self.gpu_dropdown, self.gpu_version_dropdown, self.version_manager
         )
+        self.cpu_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.cpu_dropdown, self.cpu_version_dropdown, self.version_manager
+        )
+        self.motherboard_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.motherboard_dropdown,
+            self.motherboard_version_dropdown,
+            self.version_manager,
+        )
+
+        # CombinedUpdaters
         self.gpu_combined_updater = PCDIYHelperApp.CombinedUpdater(
             self.cpu_updater, self.gpu_version_updater
         )
+        self.cpu_combined_updater = PCDIYHelperApp.CombinedUpdater(
+            self.motherboard_updater, self.cpu_version_updater
+        )
+        self.motherboard_combined_updater = PCDIYHelperApp.CombinedUpdater(
+            None, self.motherboard_version_updater
+        )
 
-        self.cpu_updater.bind_update()
-        self.motherboard_updater.bind_update()
+        # Other VersionUpdaters
+        self.ram_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.ram_dropdown, self.ram_version_dropdown, self.version_manager
+        )
+
+        self.ssd_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.ssd_dropdown, self.ssd_version_dropdown, self.version_manager
+        )
+
+        self.cooling_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.cooling_dropdown, self.cooling_version_dropdown, self.version_manager
+        )
+
+        self.fans_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.fans_dropdown, self.fans_version_dropdown, self.version_manager
+        )
+
+        self.psu_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.psu_dropdown, self.psu_version_dropdown, self.version_manager
+        )
+
+        self.case_version_updater = PCDIYHelperApp.VersionUpdater(
+            self.case_dropdown, self.case_version_dropdown, self.version_manager
+        )
+
+        # UPDATE ALL
         self.gpu_combined_updater.bind_update()
+        self.cpu_combined_updater.bind_update()
+        self.motherboard_combined_updater.bind_update()
+        self.ram_version_updater.bind_update()
+        self.ssd_version_updater.bind_update()
+        self.cooling_version_updater.bind_update()
+        self.fans_version_updater.bind_update()
+        self.psu_version_updater.bind_update()
+        self.case_version_updater.bind_update()
 
         # Button to display selected components
         build_button = ttk.Button(
             self,
             text="Build PC",
-            command=self.display_selected_components,
+            command=self.report_build_and_price,
             style="TButton",
         )
-        build_col = 6
+        build_col = 8
         build_button.grid(row=0, column=build_col, pady=10, padx=30)
 
         # Text box to display selected components
         self.result_text = tk.Text(self, height=30, width=100)  # Adjusted size
         self.result_text.grid(row=1, rowspan=5, column=build_col, pady=10, padx=30)
 
-    def display_selected_components(self):
+    def report_build_and_price(self):
+        gpu_version = self.gpu_version_dropdown.var.get()
+        cpu_version = self.cpu_version_dropdown.var.get()
+        motherboard_version = self.motherboard_version_dropdown.var.get()
+        ram_version = self.ram_version_dropdown.var.get()
+        ssd_version = self.ssd_version_dropdown.var.get()
+        cooling_version = self.cooling_version_dropdown.var.get()
+        fans_version = self.fans_version_dropdown.var.get()
+        psu_version = self.psu_version_dropdown.var.get()
+        case_version = self.case_version_dropdown.var.get()
+
         gpu = self.gpu_dropdown.var.get()
         cpu = self.cpu_dropdown.var.get()
         motherboard = self.motherboard_dropdown.var.get()
@@ -214,46 +330,35 @@ class PCDIYHelperApp(tk.Tk):
         fans = self.fans_dropdown.var.get()
         psu = self.psu_dropdown.var.get()
         case = self.case_dropdown.var.get()
-        result = f"GPU: {gpu}\nCPU: {cpu}\nMotherboard\n{motherboard}\nRAM: {ram}\nSSD: {ssd}\nCooling: {cooling}\nFans: {fans}\nPSU: {psu}\nCase: {case}."
+
+        result = f"GPU: {gpu_version}\nCPU: {cpu_version}\nMotherboard: {motherboard_version}\nRAM: {ram_version}\nSSD: {ssd_version}\nCooling: {cooling_version}\nFans: {fans_version}\nPSU: {psu_version}\nCase: {case_version}."
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, result)
 
         # Calculate total price and price decomposition
         total_price = 0
         price_decomposition = []
-        categories = [
-            "GPU",
-            "CPU",
-            "Motherboard",
-            "RAM",
-            "SSD",
-            "Cooling",
-            "Fans",
-            "PSU",
-            "Case",
-        ]
-        dropdowns = [
-            self.gpu_dropdown,
-            self.cpu_dropdown,
-            self.motherboard_dropdown,
-            self.ram_dropdown,
-            self.ssd_dropdown,
-            self.cooling_dropdown,
-            self.fans_dropdown,
-            self.psu_dropdown,
-            self.case_dropdown,
-        ]
+        models = [gpu, cpu, motherboard, ram, ssd, cooling, fans, psu, case]
+        versions = (
+            gpu_version,
+            cpu_version,
+            motherboard_version,
+            ram_version,
+            ssd_version,
+            cooling_version,
+            fans_version,
+            psu_version,
+            case_version,
+        )
 
-        for category, dropdown in zip(categories, dropdowns):
-            name = dropdown.var.get()
-            price = self.price_manager.get_price(category, name)
-            total_price += price
-
-        for category, dropdown in zip(categories, dropdowns):
-            name = dropdown.var.get()
-            price = self.price_manager.get_price(category, name)
+        price_ls = [
+            self.version_manager.get_version_price(model, version)
+            for model, version in zip(models, versions)
+        ]
+        total_price = sum(price_ls)
+        for version, price in zip(versions, price_ls):
             percent = (price / total_price) * 100 if total_price > 0 else 0
-            price_decomposition.append(f"{name}: ${price} ({percent:.2f}%)")
+            price_decomposition.append(f"{version}: ${price} ({percent:.2f}%)")
 
         result += (
             f"\n\n{'=' * 50}\n\nTotal Price: ${total_price}\n\nPrice Decomposition:\n"
