@@ -1,23 +1,25 @@
+import getpass
+import json
+import os
+import sys
 import tkinter as tk
 from tkinter import ttk
-import json
-import sys
-import getpass
 
 sys.path.append(f"/Users/{getpass.getuser()}/git/mhli971/PC-DIY-Helper/")
+from pc_diy_helper.constants import DIR_CONFIG, GUI_WINDOW_SIZE
 from pc_diy_helper.dropdown import Dropdown
 from pc_diy_helper.managers import VersionManager
-from pc_diy_helper.updaters import ModelUpdater, VersionUpdater, CombinedUpdater
+from pc_diy_helper.updaters import CombinedUpdater, ModelUpdater, VersionUpdater
 
 
 class PCDIYHelperApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("PC DIY Helper")
-        self.geometry("2500x600")
+        self.geometry(GUI_WINDOW_SIZE)
 
         # Load configuration
-        with open("pc_diy_helper/dependents.json") as f:
+        with open(os.path.join(DIR_CONFIG, "dependents.json")) as f:
             config = json.load(f)
         self.cpus = config["CPUs"]
         self.gpus = config["GPUs"]
@@ -30,7 +32,7 @@ class PCDIYHelperApp(tk.Tk):
         self.cases = config["Case"]
 
         # Managers
-        self.version_manager = VersionManager("pc_diy_helper/versions.json")
+        self.version_manager = VersionManager(os.path.join(DIR_CONFIG, "versions.json"))
 
         # Dropdowns
         self.gpu_dropdown = Dropdown(
@@ -39,7 +41,7 @@ class PCDIYHelperApp(tk.Tk):
         self.gpu_version_dropdown = Dropdown(
             self,
             f"Select a specific model for GPU:",
-            [],
+            self._get_versions_helper(self.gpu_dropdown),
             None,
             0,
             4,
@@ -50,7 +52,7 @@ class PCDIYHelperApp(tk.Tk):
         self.cpu_version_dropdown = Dropdown(
             self,
             f"Select a specific model for CPU:",
-            [],
+            self._get_versions_helper(self.cpu_dropdown),
             None,
             1,
             4,
@@ -66,7 +68,7 @@ class PCDIYHelperApp(tk.Tk):
         self.motherboard_version_dropdown = Dropdown(
             self,
             f"Select a specific model for Motherboard:",
-            [],
+            self._get_versions_helper(self.motherboard_dropdown),
             None,
             2,
             4,
@@ -77,7 +79,7 @@ class PCDIYHelperApp(tk.Tk):
         self.ram_version_dropdown = Dropdown(
             self,
             f"Select a specific model for RAM:",
-            [],
+            self._get_versions_helper(self.ram_dropdown),
             None,
             3,
             4,
@@ -88,7 +90,7 @@ class PCDIYHelperApp(tk.Tk):
         self.ssd_version_dropdown = Dropdown(
             self,
             f"Select a specific model for SSD:",
-            [],
+            self._get_versions_helper(self.ssd_dropdown),
             None,
             4,
             4,
@@ -99,7 +101,7 @@ class PCDIYHelperApp(tk.Tk):
         self.cooling_version_dropdown = Dropdown(
             self,
             "Select a specific model for Cooling:",
-            [],
+            self._get_versions_helper(self.cooling_dropdown),
             None,
             5,
             4,
@@ -111,7 +113,7 @@ class PCDIYHelperApp(tk.Tk):
         self.fans_version_dropdown = Dropdown(
             self,
             "Select a specific model for Fans:",
-            [],
+            self._get_versions_helper(self.fans_dropdown),
             None,
             0,
             6,
@@ -123,7 +125,7 @@ class PCDIYHelperApp(tk.Tk):
         self.psu_version_dropdown = Dropdown(
             self,
             "Select a specific model for PSU:",
-            [],
+            self._get_versions_helper(self.psu_dropdown),
             None,
             1,
             6,
@@ -135,7 +137,7 @@ class PCDIYHelperApp(tk.Tk):
         self.case_version_dropdown = Dropdown(
             self,
             "Select a specific model for Case:",
-            [],
+            self._get_versions_helper(self.case_dropdown),
             None,
             2,
             6,
@@ -218,10 +220,11 @@ class PCDIYHelperApp(tk.Tk):
         )
         build_col = 8
         build_button.grid(row=0, column=build_col, pady=10, padx=30)
-
-        # Text box to display selected components
         self.result_text = tk.Text(self, height=30, width=100)  # Adjusted size
         self.result_text.grid(row=1, rowspan=5, column=build_col, pady=10, padx=30)
+
+    def _get_versions_helper(self, dropdown):
+        return list(self.version_manager.get_versions(dropdown.var.get()).keys())
 
     def report_build_and_price(self):
         gpu_version = self.gpu_version_dropdown.var.get()
