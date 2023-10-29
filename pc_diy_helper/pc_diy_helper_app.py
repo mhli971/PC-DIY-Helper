@@ -331,7 +331,16 @@ class PCDIYHelperApp(tk.Tk):
         psu = self.psu_dropdown.var.get()
         case = self.case_dropdown.var.get()
 
-        result = f"GPU: {gpu_version}\nCPU: {cpu_version}\nMotherboard: {motherboard_version}\nRAM: {ram_version}\nSSD: {ssd_version}\nCooling: {cooling_version}\nFans: {fans_version}\nPSU: {psu_version}\nCase: {case_version}."
+        result = "Selected Components:\n"
+        result += f"GPU: {gpu_version}\n"
+        result += f"CPU: {cpu_version}\n"
+        result += f"Motherboard: {motherboard_version}\n"
+        result += f"RAM: {ram_version}\n"
+        result += f"SSD: {ssd_version}\n"
+        result += f"Cooling: {cooling_version}\n"
+        result += f"Fans: {fans_version}\n"
+        result += f"PSU: {psu_version}\n"
+        result += f"Case: {case_version}.\n"
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, result)
 
