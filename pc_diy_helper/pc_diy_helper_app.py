@@ -54,8 +54,8 @@ class PCDIYHelperApp(tk.Tk):
         def update_model_dropdown(self, event):
             prev_model = self.prev_dropdown.var.get()
             dependent_ls = self.dependent_dict.get(prev_model, [])
-            print(prev_model)
-            print(dependent_ls)
+            # print(prev_model)
+            # print(dependent_ls)
             self.cur_dropdown.var.set(dependent_ls[0])  # set the default option
             self.cur_dropdown.menu["values"] = dependent_ls
             # chain the updates
@@ -88,6 +88,23 @@ class PCDIYHelperApp(tk.Tk):
                 "<<ComboboxSelected>>",
                 lambda event: self.update_version_dropdown(event),
             )
+
+    class CombinedUpdater:
+        def __init__(self, model_updater, version_updater):
+            self.model_updater = model_updater
+            self.version_updater = version_updater
+
+        def bind_update(self):
+            assert (
+                self.model_updater.prev_dropdown == self.version_updater.model_dropdown
+            )
+            self.model_updater.prev_dropdown.menu.bind(
+                "<<ComboboxSelected>>", self.wrapper_function
+            )
+
+        def wrapper_function(self, event):
+            self.model_updater.update_model_dropdown(event)
+            self.version_updater.update_version_dropdown(event)
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -165,10 +182,13 @@ class PCDIYHelperApp(tk.Tk):
         self.gpu_version_updater = PCDIYHelperApp.VersionUpdater(
             self.gpu_dropdown, self.gpu_version_dropdown, self.version_manager
         )
+        self.gpu_combined_updater = PCDIYHelperApp.CombinedUpdater(
+            self.cpu_updater, self.gpu_version_updater
+        )
 
         self.cpu_updater.bind_update()
         self.motherboard_updater.bind_update()
-        # self.gpu_version_updater.bind_update()
+        self.gpu_combined_updater.bind_update()
 
         # Button to display selected components
         build_button = ttk.Button(
