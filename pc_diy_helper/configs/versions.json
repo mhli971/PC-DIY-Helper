@@ -12,46 +12,37 @@
         "ZOTAC Apoclypse RTX 4080": 1180
     },
     "i7-13700KF": {
-        "Intel i7-13700KF": 400,
-        "Intel i7-13700KF (Special Edition)": 450,
-        "Intel i7-13700KF (Overclocked Edition)": 470,
-        "Intel i7-13700KF (Pro Gamer Edition)": 500
+        "Intel i7-13700KF": 380
     },
     "i5-13600KF": {
-        "Intel i5-13600KF": 300,
-        "Intel i5-13600KF (Special Edition)": 350,
-        "Intel i5-13600KF (Overclocked Edition)": 370,
-        "Intel i5-13600KF (Pro Gamer Edition)": 400
+        "Intel i5-13600KF": 286
     },
     "Z790": {
-        "ASUS Z790": 250,
-        "MSI Z790": 240,
-        "GIGABYTE Z790": 230
+        "MSI MPG Z790 Carbon": 440,
+        "MSI MPG Z790 Edge": 340,
+	"MSI PRO Z790-A": 210,        
+	"GIGABYTE Z790 AERO G": 290,
+	"GIGABYTE Z790 AORUS Master": 290,
+	"ASUS ROG Maximus Z790 Hero": 550,
+	"ASUS ROG Strix Z790-H": 300,
+	"ASUS ROG Strix Z790-A": 367,
+	"ASUS PRIME Z790-A": 290
     },
-    "B760": {
-        "ASUS B760": 180,
-        "MSI B760": 170,
-        "GIGABYTE B760": 160
+    "DDR5 32G (16Gx2)": {
+        "G.SKILL Trident Z5 Neo 6000/30": 120,
+        "G.SKILL Flare X5 Series 6000/30": 103,
+        "CORSAIR DOMINATOR PLATINUM 6400/32": 150,
+	"CORSAIR VENGEANCE 6000/36": 120,
+	"(not stable) TEAMGROUP T-Force Delta 7200/34": 130
     },
-    "32G DDR5": {
-        "Corsair 32G DDR5": 150,
-        "Kingston 32G DDR5": 140,
-        "Samsung 32G DDR5": 130
-    },
-    "1T": {
-        "Samsung 1T SSD": 100,
-        "Kingston 1T SSD": 90,
-        "Crucial 1T SSD": 80
+    "SSD 1T": {
+        "SAMSUNG 990 PRO w/ Heatsink": 90,
+	"WD_BLACK 1TB SN850X w/ Heatsink": 80
     },
     "Liquid Cooling": {
         "Corsair Liquid Cooling": 120,
         "NZXT Liquid Cooling": 110,
         "DeepCool Liquid Cooling": 100
-    },
-    "Air Cooling": {
-        "Noctua Air Cooling": 90,
-        "Be Quiet Air Cooling": 80,
-        "DeepCool Air Cooling": 70
     },
     "120mm Fans": {
         "Corsair 120mm Fans": 20,
@@ -63,19 +54,14 @@
         "NZXT 80mm Fans": 8,
         "Noctua 80mm Fans": 12
     },
-    "850W PSU": {
-        "Corsair 850W PSU": 140,
-        "EVGA 850W PSU": 130,
-        "Seasonic 850W PSU": 125
-    },
     "1000W PSU": {
-        "Corsair 1000W PSU": 180,
-        "EVGA 1000W PSU": 175,
-        "Seasonic 1000W PSU": 170
+        "Corsair RM1000x": 170,
+        "ASUS ROG STRIX 1000W Gold PSU": 152,
+        "ASUS ROG Thor 1000W Platinum II": 290,
+	"EVGA SuperNOVA 1000 G5": 200,
+	"MSI MPG A1000G": 170
     },
     "Case": {
-        "NZXT Case": 100,
-        "Corsair Case": 90,
-        "Fractal Design Case": 85
+        "NZXT H7 Flow": 130
     }
 }

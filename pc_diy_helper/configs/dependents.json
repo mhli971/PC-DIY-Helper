@@ -22,14 +22,13 @@
         "B760": []
     },
     "RAM": [
-        "32G DDR5"
+        "DDR5 32G (16Gx2)"
     ],
     "SSD": [
-        "1T"
+        "SSD 1T"
     ],
     "Cooling": [
-        "Liquid Cooling",
-        "Air Cooling"
+        "Liquid Cooling"
     ],
     "Fans": [
         "120mm Fans",
